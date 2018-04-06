@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         if (!notfirstRun) {
             serviceSwitchValue = settings.getBoolean("serviceSwitchValue", false);
             notfirstRun = true;
-            if (!serviceAlive) {
+            if (!serviceAlive && serviceSwitchValue) {
                 Intent intent = new Intent(MainActivity.this, WService.class);
                 startService(intent);
             }

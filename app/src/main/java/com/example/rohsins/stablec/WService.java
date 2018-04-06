@@ -48,7 +48,8 @@ public class WService extends Service implements MqttCallbackExtended {
 
     JSONObject jsonMqttMessage;
 
-    private static PowerManager.WakeLock wakeLock;
+//    private static PowerManager powerManager;
+//    private static PowerManager.WakeLock wakeLock;
 
     Handler notificationHandler = new Handler();
 
@@ -71,6 +72,11 @@ public class WService extends Service implements MqttCallbackExtended {
     public void onCreate() {
         super.onCreate();
         serviceAlive = true;
+
+//        powerManager = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+//        wakeLock = powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "WService WakeLock");
+//        wakeLock.acquire();
+//        Toast.makeText(this, "Wake Lock Acquired", Toast.LENGTH_SHORT).show();
 
         retain = false;
         qos = 2;
@@ -127,6 +133,7 @@ public class WService extends Service implements MqttCallbackExtended {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         serviceAlive = true;
+//        onTaskRemoved(intent);
         Toast.makeText(this, "Starting Service", Toast.LENGTH_SHORT).show();
         return START_STICKY_COMPATIBILITY;
     }
@@ -135,6 +142,16 @@ public class WService extends Service implements MqttCallbackExtended {
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Intent sIntent = new Intent(getApplicationContext(), this.getClass());
+        sIntent.setPackage(getPackageName());
+        startService(sIntent);
+        super.onTaskRemoved(rootIntent);
+        Log.d("output", "service restarted");
     }
 
     @Override
@@ -180,7 +197,8 @@ public class WService extends Service implements MqttCallbackExtended {
         try {
             mqttClient.disconnect();
             mqttClient.unsubscribe(subscribeTopic);
-            Toast.makeText(WService.this, "Killing Service", Toast.LENGTH_SHORT).show();
+//            wakeLock.release();
+            Toast.makeText(this, "Killing Service", Toast.LENGTH_SHORT).show();
         } catch (MqttException e) {
             e.printStackTrace();
         }
