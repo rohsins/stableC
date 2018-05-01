@@ -48,7 +48,11 @@ public class MainActivity extends AppCompatActivity {
                 newR = true;
                 if(serviceSwitchValue && !WService.serviceAlive) {
                     Intent intent = new Intent(MainActivity.this, WService.class);
-                    startService(intent);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent);
+                    } else {
+                        startService(intent);
+                    }
                 }
                 else if(!serviceSwitchValue && WService.serviceAlive) {
                     Intent intent = new Intent(MainActivity.this, WService.class);

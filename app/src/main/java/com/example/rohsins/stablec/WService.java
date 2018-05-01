@@ -48,8 +48,8 @@ public class WService extends Service implements MqttCallbackExtended {
 
     JSONObject jsonMqttMessage;
 
-//    private static PowerManager powerManager;
-//    private static PowerManager.WakeLock wakeLock;
+    private static PowerManager powerManager;
+    private static PowerManager.WakeLock wakeLock;
 
     Handler notificationHandler = new Handler();
 
@@ -65,18 +65,15 @@ public class WService extends Service implements MqttCallbackExtended {
         }
     };
 
-    public WService() {
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
         serviceAlive = true;
 
-//        powerManager = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-//        wakeLock = powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "WService WakeLock");
-//        wakeLock.acquire();
-//        Toast.makeText(this, "Wake Lock Acquired", Toast.LENGTH_SHORT).show();
+        powerManager = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WService WakeLock");
+        wakeLock.acquire();
+        Toast.makeText(this, "Wake Lock Acquired", Toast.LENGTH_SHORT).show();
 
         retain = false;
         qos = 2;
@@ -92,7 +89,7 @@ public class WService extends Service implements MqttCallbackExtended {
         connectionOption.setPassword("rtshardware".toCharArray());
         connectionOption.setAutomaticReconnect(true);
         connectionOption.setConnectionTimeout(30);
-        connectionOption.setKeepAliveInterval(18000);
+        connectionOption.setKeepAliveInterval(60);
         connectionOption.setCleanSession(false);
 
         try {
@@ -104,7 +101,6 @@ public class WService extends Service implements MqttCallbackExtended {
             e.printStackTrace();
         }
 
-
         notificationBuilder = new NotificationCompat.Builder(this, "my_channel_01")
                 .setSmallIcon(R.drawable.televisions)
                 .setContentTitle("Mqtt Notification")
@@ -112,7 +108,6 @@ public class WService extends Service implements MqttCallbackExtended {
                 .setAutoCancel(true)
                 .setPriority(Notification.PRIORITY_DEFAULT)
                 .setDefaults(Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS);
-
 
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -135,7 +130,7 @@ public class WService extends Service implements MqttCallbackExtended {
         serviceAlive = true;
 //        onTaskRemoved(intent);
         Toast.makeText(this, "Starting Service", Toast.LENGTH_SHORT).show();
-        return START_STICKY_COMPATIBILITY;
+        return START_STICKY;
     }
 
     @Override
@@ -143,7 +138,6 @@ public class WService extends Service implements MqttCallbackExtended {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
-
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
@@ -197,7 +191,7 @@ public class WService extends Service implements MqttCallbackExtended {
         try {
             mqttClient.disconnect();
             mqttClient.unsubscribe(subscribeTopic);
-//            wakeLock.release();
+            wakeLock.release();
             Toast.makeText(this, "Killing Service", Toast.LENGTH_SHORT).show();
         } catch (MqttException e) {
             e.printStackTrace();
