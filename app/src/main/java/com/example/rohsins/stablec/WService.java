@@ -80,7 +80,7 @@ public class WService extends Service implements MqttCallbackExtended {
         publishTopic = "RTSR&D/baanvak/pub/00000001";
         subscribeTopic = "RTSR&D/baanvak/sub/00000001";
         brokerAddress = "tcp://hardware.wscada.net:1883";
-        clientId = "rohitTestA";
+        clientId = "rohitTestC";
 
         persistence = new MemoryPersistence();
         connectionOption = new MqttConnectOptions();
